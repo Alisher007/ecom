@@ -1,0 +1,77 @@
+{% extends "main/base.html" %}
+
+{% block extra_head %}
+
+<script src="https://js.stripe.com/v3/"></script>
+<style>
+
+.lds-dual-ring {
+  display: inline-block;
+  width: 80px;
+  height: 80px;
+}
+.lds-dual-ring:after {
+  content: " ";
+  display: block;
+  width: 64px;
+  height: 64px;
+  margin: 8px;
+  border-radius: 50%;
+  border: 6px solid #cef;
+  border-color: #cef transparent #cef transparent;
+  animation: lds-dual-ring 1.2s linear infinite;
+}
+@keyframes lds-dual-ring {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+
+</style>
+
+{% endblock extra_head %}
+
+{% block content %}
+
+<div class='container'>
+    <div class='row justify-content-center'>
+        <div class="col-md-6">
+          <section class="section">
+            <div class="container text-center">
+              <p>Order total: ${{ order.get_total }}</p>
+              <button class="btn btn-secondary btn-block mb-3" id="submitBtn">Purchase!</button>
+            </div>
+          </section>
+        </div>
+    </div>
+</div>
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+fetch("http://localhost:8000/cart/config/")
+.then((result) => { return result.json(); })
+.then((data) => {
+  // Initialize Stripe.js
+  const stripe = Stripe(data.publicKey);
+
+  // Event handler
+  document.querySelector("#submitBtn").addEventListener("click", () => {
+    // Get Checkout Session ID
+    fetch("http://localhost:8000/cart/create-checkout-session/")
+    .then((result) => { return result.json(); })
+    .then((data) => {
+      console.log(data);
+      // Redirect to Stripe Checkout
+      return stripe.redirectToCheckout({sessionId: data.sessionId})
+    })
+    .then((res) => {
+      console.log(res);
+    });
+  });
+});
+</script>
+
+{% endblock content %}
